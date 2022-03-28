@@ -18,9 +18,9 @@ class GradientBorderButton: UIButton {
     @IBInspectable var shadowColor: UIColor? = nil
     
     private var colors: [UIColor] = []
-    private var wrapperView = UIView()
-    private var gradientLayer = CAGradientLayer()
-    private var backgroundView = UIView()
+    private var wrapperView: UIView?
+    private var gradientLayer: CAGradientLayer?
+    private var backgroundView: UIView?
     private var showPlainBackground = false
     
     override init(frame: CGRect) {
@@ -41,42 +41,55 @@ class GradientBorderButton: UIButton {
     private func setupViews() {
         guard !showPlainBackground else { return }
         
-        wrapperView.removeFromSuperview()
-        wrapperView = UIView()
-        wrapperView.isUserInteractionEnabled = false
-        wrapperView.translatesAutoresizingMaskIntoConstraints = false
-        insertSubview(wrapperView, at: 0)
-        wrapperView.backgroundColor = backgroundColor
-        NSLayoutConstraint.activate([
-            wrapperView.leftAnchor.constraint(equalTo: leftAnchor),
-            wrapperView.rightAnchor.constraint(equalTo: rightAnchor),
-            wrapperView.topAnchor.constraint(equalTo: topAnchor),
-            wrapperView.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
+        if wrapperView == nil {
+            wrapperView = UIView()
+            wrapperView?.isUserInteractionEnabled = false
+            wrapperView?.translatesAutoresizingMaskIntoConstraints = false
+            insertSubview(wrapperView!, at: 0)
+        }
+        if let wrapperView = wrapperView {
+            wrapperView.removeConstraints(wrapperView.constraints)
+            NSLayoutConstraint.activate([
+                wrapperView.leftAnchor.constraint(equalTo: leftAnchor),
+                wrapperView.rightAnchor.constraint(equalTo: rightAnchor),
+                wrapperView.topAnchor.constraint(equalTo: topAnchor),
+                wrapperView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            ])
+        }
+        wrapperView?.isHidden = false
+        wrapperView?.backgroundColor = backgroundColor
         
-        gradientLayer.removeFromSuperlayer()
-        gradientLayer = CAGradientLayer()
-        gradientLayer.frame = bounds
+        if gradientLayer == nil {
+            gradientLayer = CAGradientLayer()
+            wrapperView?.layer.insertSublayer(gradientLayer!, at: 0)
+        }
+        gradientLayer?.isHidden = false
+        gradientLayer?.frame = bounds
         if colors.count == 0 { // in case colors are set using setGradientBorder method
             colors = [startColor, endColor]
         }
-        gradientLayer.colors = colors.compactMap({ return $0.cgColor })
-        gradientLayer.startPoint = startPoint
-        gradientLayer.endPoint = endPoint
-        wrapperView.layer.insertSublayer(gradientLayer, at: 0)
+        gradientLayer?.colors = colors.compactMap({ return $0.cgColor })
+        gradientLayer?.startPoint = startPoint
+        gradientLayer?.endPoint = endPoint
         
-        backgroundView.removeFromSuperview()
-        backgroundView = UIView()
-        backgroundView.isUserInteractionEnabled = false
-        backgroundView.translatesAutoresizingMaskIntoConstraints = false
-        wrapperView.addSubview(backgroundView)
-        backgroundView.backgroundColor = backgroundColor
-        NSLayoutConstraint.activate([
-            backgroundView.leftAnchor.constraint(equalTo: wrapperView.leftAnchor, constant: borderWidth),
-            backgroundView.rightAnchor.constraint(equalTo: wrapperView.rightAnchor, constant: -borderWidth),
-            backgroundView.topAnchor.constraint(equalTo: wrapperView.topAnchor, constant: borderWidth),
-            backgroundView.bottomAnchor.constraint(equalTo: wrapperView.bottomAnchor, constant: -borderWidth)
-        ])
+        if backgroundView == nil {
+            backgroundView = UIView()
+            backgroundView?.isUserInteractionEnabled = false
+            backgroundView?.translatesAutoresizingMaskIntoConstraints = false
+            wrapperView?.addSubview(backgroundView!)
+        }
+        // in case border width changes
+        if let backgroundView = backgroundView, let wrapperView = wrapperView {
+            backgroundView.removeConstraints(backgroundView.constraints)
+            NSLayoutConstraint.activate([
+                backgroundView.leftAnchor.constraint(equalTo: wrapperView.leftAnchor, constant: borderWidth),
+                backgroundView.rightAnchor.constraint(equalTo: wrapperView.rightAnchor, constant: -borderWidth),
+                backgroundView.topAnchor.constraint(equalTo: wrapperView.topAnchor, constant: borderWidth),
+                backgroundView.bottomAnchor.constraint(equalTo: wrapperView.bottomAnchor, constant: -borderWidth)
+            ])
+        }
+        backgroundView?.isHidden = false
+        backgroundView?.backgroundColor = backgroundColor
         
         setupCorners()
         dropShadow()
@@ -92,10 +105,10 @@ class GradientBorderButton: UIButton {
         }
         layer.cornerRadius = _cornerRadius
         
-        wrapperView.layer.cornerRadius = _cornerRadius
-        wrapperView.clipsToBounds = true
-        backgroundView.layer.cornerRadius = _cornerRadius - borderWidth
-        backgroundView.clipsToBounds = true
+        wrapperView?.layer.cornerRadius = _cornerRadius
+        wrapperView?.clipsToBounds = true
+        backgroundView?.layer.cornerRadius = _cornerRadius - borderWidth
+        backgroundView?.clipsToBounds = true
     }
     
     private func dropShadow() {
@@ -121,9 +134,9 @@ class GradientBorderButton: UIButton {
     func setPlainBackground(withColor backgroundColor: UIColor = .systemGreen) {
         self.showPlainBackground = true
         self.backgroundColor = backgroundColor
-        backgroundView.removeFromSuperview()
-        gradientLayer.removeFromSuperlayer()
-        wrapperView.removeFromSuperview()
+        backgroundView?.isHidden = true
+        gradientLayer?.isHidden = true
+        wrapperView?.isHidden = true
         setupCorners()
         dropShadow()
     }

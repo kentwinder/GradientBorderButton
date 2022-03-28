@@ -13,6 +13,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var startColorView: UIView!
     @IBOutlet weak var endColorView: UIView!
     @IBOutlet weak var shadowColorView: UIView!
+    @IBOutlet weak var bgColorView: UIView!
     
     private var isFullyRounded = false
     private var cornerRadius: CGFloat = 8
@@ -22,6 +23,8 @@ class ViewController: UIViewController {
     private var endColor: UIColor = .red
     private var hasShadow = false
     private var shadowColor: UIColor = .lightGray
+    private var showPlainBackground = false
+    private var bgColor: UIColor = .white
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,9 +44,14 @@ class ViewController: UIViewController {
         }
         button.isFullyRounded = isFullyRounded
         button.cornerRadius = cornerRadius
-        button.setGradientBorder(colors: [startColor, endColor], startPoint: startPoint, endPoint: endPoint)
+        bgColorView.backgroundColor = bgColor
+        if showPlainBackground {
+            button.setPlainBackground(withColor: bgColor)
+        } else {
+            button.setGradientBorder(colors: [startColor, endColor], startPoint: startPoint, endPoint: endPoint, backgroundColor: bgColor)
+        }
     }
-
+    
     @IBAction func borderValueChanged(_ sender: UISlider) {
         button.borderWidth = CGFloat(sender.value)
         updateViews()
@@ -60,7 +68,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func startPointValueChanged(_ sender: UISlider) {
-        startPoint = CGPoint(x: CGFloat(sender.value), y: CGFloat(sender.value))
+        startPoint = CGPoint(x: 0, y: CGFloat(sender.value))
         updateViews()
     }
     
@@ -70,7 +78,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func endPointValueChanged(_ sender: UISlider) {
-        endPoint = CGPoint(x: CGFloat(sender.value), y: CGFloat(sender.value))
+        endPoint = CGPoint(x: CGFloat(sender.value), y: 1)
         updateViews()
     }
     
@@ -86,6 +94,19 @@ class ViewController: UIViewController {
     
     @IBAction func randomShadowColor(_ sender: Any) {
         shadowColor = .random()
+        updateViews()
+    }
+    
+    @IBAction func showPlainBackgroundValueChanged(_ sender: UISwitch) {
+        showPlainBackground = sender.isOn
+        if !sender.isOn {
+            bgColor = .white
+        }
+        updateViews()
+    }
+    
+    @IBAction func randomBackgroundColor(_ sender: Any) {
+        bgColor = .random()
         updateViews()
     }
 }
